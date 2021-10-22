@@ -6,6 +6,7 @@ Ruiqi Yan
 ``` r
 library(tidyverse)
 library(rvest)
+library(p8105.datasets)
 
 knitr::opts_chunk$set(
   warning = FALSE,
@@ -15,23 +16,24 @@ knitr::opts_chunk$set(
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 
 options(
-  ggplot2.continuous.colour = "turbo",
-  ggplot2.continuous.fill = "turbo"
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
 )
 
-scale_colour_discrete = scale_colour_viridis_d(option = "turbo")
-scale_fill_discrete = scale_fill_viridis_d(option = "turbo")
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
 ```
 
-## String vectors
 
-string is case-sensitive
+    ## String vectors
 
-``` r
-string_vec = c("my", "name", "is", "jeff")
+    string is case-sensitive
 
-str_detect(string_vec, "M")
-```
+
+    ```r
+    string_vec = c("my", "name", "is", "jeff")
+
+    str_detect(string_vec, "M")
 
     ## [1] FALSE FALSE FALSE FALSE
 
@@ -185,3 +187,47 @@ marj_df %>%
 ```
 
 ![](strings_and_factors_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+## Restaurant inspections
+
+``` r
+data("rest_inspec")
+```
+
+``` r
+rest_inspec <- 
+  rest_inspec %>% 
+  filter(
+    str_detect(grade, "[ABC]"),
+    !boro == "Missing"
+  ) %>% 
+  mutate(
+    boro = str_to_title(boro)
+  )
+```
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) %>% 
+  janitor::tabyl(boro, grade)
+```
+
+    ##           boro    A   B  C
+    ##          Bronx 1170 305 56
+    ##       Brooklyn 1948 296 61
+    ##      Manhattan 1983 420 76
+    ##         Queens 1647 259 48
+    ##  Staten Island  323 127 21
+
+``` r
+rest_inspec %>% 
+  filter(str_detect(dba, "[Pp][Ii][Zz][Zz][Aa]")) %>% 
+  mutate(
+    boro = fct_infreq(boro),
+    boro = fct_recode(boro, "This City" = "Manhattan")
+  ) %>% 
+  ggplot(aes(x = boro, fill = grade)) +
+  geom_bar()
+```
+
+![](strings_and_factors_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
